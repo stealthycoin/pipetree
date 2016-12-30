@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import os
+import os.path
 import copy
 from pipetree.utils import attach_config_to_object
 from pipetree.exceptions import ArtifactSourceDoesNotExistError
@@ -36,7 +37,48 @@ class ArtifactProvider(object):
     def _validate_config(self):
         raise NotImplementedError
 
+    def _yield_artifacts(self):
+        raise NotImplementedError
+
+    def _ensure_base_meta(self, art):
+        return art
+        
+    def yield_artifacts(self):
+        for art in self._yield_artifacts:
+            yield _ensure_base_meta(art)
+
 class LocalFileArtifactProvider(ArtifactProvider):
+    DEFAULTS = {
+    }
+
+    def __init__(self, path='', **kwargs):
+        super().__init__(path=path, **kwargs)
+        self._path = path
+        self._validate_file()
+
+    def _validate_config(self):
+        pass
+
+    def _validate_file(self):
+        if not os.path.isfile(self.path):
+            if not os.access(self.path, os.R_OK):
+                raise ArtifactSourceDoesNotExistError(
+                    provider=self.__class__.__name__,
+                    source='file: %s' % os.path.join(os.getcwd(), self.path))
+
+    def yield_artifacts(self):
+        yield f
+
+    def yield_artifact(self, artifact_name):
+        artifact_path = os.path.join(os.getcwd(),
+                                     self._root,
+                                     artifact_name)
+        if self.read_content:
+            with open(artifact_path, 'rb') as f:
+                return f.read()
+        return artifact_path
+
+class LocalDirectoryArtifactProvider(ArtifactProvider):
     DEFAULTS = {
         'read_content': False
     }
@@ -57,9 +99,9 @@ class LocalFileArtifactProvider(ArtifactProvider):
 
     def yield_artifacts(self):
         for entry in os.listdir(self._root):
-            yield self.yield_artifact(entry)
+            yield self._yield_artifact(entry)
 
-    def yield_artifact(self, artifact_name):
+    def _yield_artifact(self, artifact_name):
         artifact_path = os.path.join(os.getcwd(),
                                      self._root,
                                      artifact_name)

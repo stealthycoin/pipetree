@@ -22,6 +22,8 @@
 from pipetree.storage import LocalFileArtifactProvider
 from pipetree.exceptions import InvalidConfigurationFileError
 
+import 
+
 
 class BasePipelineStage(object):
     """Base class for a pipeline stage"""
@@ -42,12 +44,38 @@ class BasePipelineStage(object):
         raise NotImplementedError
 
 
+class LocalFilePipelineStage(BasePipelineStage):
+    """A pipeline stage for sourcing a single file locally"""
+
+    def __init__(self, config):
+        super().__init__(config)
+        self._artifact_source = LocalFileArtifactProvider(config.filepath)
+
+    def validate_prereqs(self, previous_stages):
+        return True
+
+    def _source_artifact(self, artifact_name):
+        pass
+
+    def _yield_artifacts(self):
+        pass
+
+    def _validate_config(self, config):
+        """
+        Raise an exception if the config is invald
+        """
+        if not hasattr(config, 'filepath'):
+            raise InvalidConfigurationFileError(
+                configurable=self.__class__.__name__,
+                reason='expected \'filepath\' entry of type string.')
+        return True
+
 class LocalDirectoryPipelineStage(BasePipelineStage):
     """A pipeline stage for sourcing files from a directory"""
 
     def __init__(self, config):
         super().__init__(config)
-        self._artifact_source = LocalFileArtifactProvider(config.filepath)
+        self._artifact_source = LocalDirectoryArtifactProvider(config.filepath)
 
     def validate_prereqs(self, previous_stages):
         return True
