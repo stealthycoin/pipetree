@@ -53,6 +53,9 @@ class NonPythonicNameError(PipetreeError):
 class ArtifactSourceDoesNotExistError(PipetreeError):
     message = '{provider} cannot source artifacts from {source}'
 
+class InvalidArtifactMetadataError(PipetreeError):
+    message = 'Artifact Metadata Invalid for pipeline stage {stage}'
+
 
 class InvalidConfigurationFileError(PipetreeError):
     message = 'Error in config for \'{configurable}\' {reason}'
