@@ -19,10 +19,57 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""
-arbiter/arbiter.py
-=========
+import click
+import asyncio
+from pipetree.pipeline import PipelineFactory
 
-Implementation of arbiter to coordinate pipeline execution
-"""
 
+class ArbiterBase(object):
+    def __init__(self, filepath):
+        self._loop = asyncio.get_event_loop()
+        self._pipeline = PipelineFactory().generate_pipeline_from_file(filepath)
+        self._queue = asyncio.Queue(loop=self._loop)
+        self._pipeline.set_arbiter_queue(self._queue)
+
+
+    def _evaluate_pipeline(self):
+        for name, stage in self._pipeline.stages.items():
+            self._queue.put_nowait(name)
+
+    def run_event_loop(self):
+        raise NotImplementedError
+
+
+class LocalArbiter(ArbiterBase):
+    def __init__(self, filepath):
+        super().__init__(filepath)
+
+    async def _listen_to_queue(self):
+        try:
+            while True:
+                data = await self._queue.get()
+                print('Read: %s' % data)
+        except RuntimeError:
+            pass
+        finally:
+            print('Closing local arbiter queue listener.')
+
+    async def _main(self):
+        self._evaluate_pipeline()
+        print('Cats are fuzzy')
+
+
+    def run_event_loop(self):
+        try:
+            self._loop.run_until_complete(asyncio.wait([
+                self._main(),
+                self._listen_to_queue()
+            ]))
+        except KeyboardInterrupt:
+            click.echo('\nKeyboard Interrupt: closing event loop.')
+        finally:
+            self._loop.close()
+
+
+class RemoteArbiter(ArbiterBase):
+    pass

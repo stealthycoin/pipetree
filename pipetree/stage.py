@@ -55,7 +55,7 @@ class LocalDirectoryPipelineStage(BasePipelineStage):
     def _source_artifact(self, artifact_name):
         pass
 
-    def _yield_artifacts(self):
+    def _yield_artifacts(self, *args, **kwargs):
         pass
 
     def _validate_config(self, config):

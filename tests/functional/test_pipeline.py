@@ -174,4 +174,5 @@ class TestPipelineLoading(unittest.TestCase):
                 'execute': 'package.file.function'
             }),
         ])
-        self.factory.generate_pipeline_from_dict(config)
+        pipeline = self.factory.generate_pipeline_from_dict(config)
+        self.assertEqual(set(('StageB',)), pipeline._endpoints)

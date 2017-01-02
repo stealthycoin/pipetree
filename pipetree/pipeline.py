@@ -29,6 +29,24 @@ from pipetree.exceptions import DuplicateStageNameError
 class Pipeline(object):
     def __init__(self, stages=None):
         self._stages = stages or OrderedDict()
+        self._endpoints = set()
+        self._find_endpoint_stages()
+        self._queue = None
+
+    def _find_endpoint_stages(self):
+        for stage in self._stages:
+            self._endpoints.add(stage)
+        for _, stage in self._stages.items():
+            if hasattr(stage, 'inputs'):
+                for input_stage in stage.inputs:
+                    self._endpoints.remove(input_stage)
+
+    def set_arbiter_queue(self, queue):
+        self._queue = queue
+
+    @property
+    def stages(self):
+        return self._stages
 
 
 class PipelineFactory(object):
