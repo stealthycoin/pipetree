@@ -22,7 +22,8 @@
 import os
 import unittest
 from tests import isolated_filesystem
-from pipetree.storage import LocalFileArtifactProvider
+from pipetree.config import PipelineStageConfig
+from pipetree.storage import LocalDirectoryArtifactProvider
 from pipetree.exceptions import ArtifactSourceDoesNotExistError,\
     InvalidConfigurationFileError
 
@@ -34,6 +35,9 @@ class TestLocalDirectoryArtifactProvider(unittest.TestCase):
         self.filedatas = ['foo bar baz', 'helloworld']
         self.fs = isolated_filesystem()
         self.fs.__enter__()
+        self.stage_config = PipelineStageConfig("test_stage_name", {
+            "type": "LocalDirectoryPipelineStage"
+        })
 
         # Build directory structure
         os.makedirs(self.dirname)
@@ -48,20 +52,23 @@ class TestLocalDirectoryArtifactProvider(unittest.TestCase):
 
     def test_load_nonexistant_dir(self):
         try:
-            LocalFileArtifactProvider(path='folder/')
+            LocalDirectoryArtifactProvider(path='folder/',
+                                           stage_config=self.stage_config)
             self.assertTrue(False, 'This was supposed to raise an exception')
         except ArtifactSourceDoesNotExistError:
             pass
 
     def test_load_file_data(self):
-        provider = LocalFileArtifactProvider(path=self.dirname,
-                                             read_content=True)
-        art = provider.yield_artifact(self.filename[0])
+        provider = LocalDirectoryArtifactProvider(path=self.dirname,
+                                                  stage_config=self.stage_config,
+                                                  read_content=True)
+        art = provider._yield_artifact(self.filename[0])
         self.assertEqual(art.payload.decode('utf-8'),
                          self.filedatas[0])
 
     def test_load_file_names(self):
-        provider = LocalFileArtifactProvider(path=self.dirname)
+        provider = LocalDirectoryArtifactProvider(path=self.dirname,
+                                                  stage_config=self.stage_config)
         for loaded_name, name in zip(provider.yield_artifacts(),
                                      self.filename):
             self.assertEqual(loaded_name, os.path.join(os.getcwd(),
@@ -69,9 +76,10 @@ class TestLocalDirectoryArtifactProvider(unittest.TestCase):
                                                        name))
 
     def test_load_multiple_file_contents(self):
-        provider = LocalFileArtifactProvider(path=self.dirname,
-                                             read_content=True)
-        for block, art in zip(provider.yield_artifacts(),
-                               self.filedatas):
-            data = art.payload
-            self.assertEqual(block.decode('utf-8'), data)
+        provider = LocalDirectoryArtifactProvider(path=self.dirname,
+                                                  stage_config=self.stage_config,
+                                                  read_content=True)
+        for art, data in zip(provider.yield_artifacts(),
+                             self.filedatas):
+            art_data = art.payload
+            self.assertEqual(art_data.decode('utf-8'), data)

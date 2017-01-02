@@ -59,7 +59,7 @@ class Artifact(object):
         self._item_type = item_type
 
         # Actual artifact payload
-        self._payload = None
+        self.payload = None
 
         # Listing of meta properties for serialization purposes
         self._meta_properties = ["meta", "tags", "antecedents", "creation_time", "definition_hash", "specific_hash", "dependency_hash", "pipeline_stage", "item_type"]

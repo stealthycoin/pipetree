@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from pipetree import STAGES
 from pipetree.utils import attach_config_to_object
 from pipetree.exceptions import IncorrectPipelineStageNameError,\
     NonPythonicNameError, MissingPipelineAttributeError
