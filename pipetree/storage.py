@@ -67,36 +67,3 @@ class LocalFileArtifactProvider(ArtifactProvider):
             with open(artifact_path, 'rb') as f:
                 return f.read()
         return artifact_path
-
-
-class LocalFileArtifactProvider(ArtifactProvider):
-    DEFAULTS = {
-        'read_content': False
-    }
-
-    def __init__(self, path='', **kwargs):
-        super().__init__(path=path, **kwargs)
-        self._root = path
-        self._validate_dir()
-
-    def _validate_config(self):
-        pass
-
-    def _validate_dir(self):
-        if not os.path.isdir(self._root):
-            raise ArtifactSourceDoesNotExistError(
-                provider=self.__class__.__name__,
-                source='directory: %s' % os.path.join(os.getcwd(), self._root))
-
-    def yield_artifacts(self):
-        for entry in os.listdir(self._root):
-            yield self.yield_artifact(entry)
-
-    def yield_artifact(self, artifact_name):
-        artifact_path = os.path.join(os.getcwd(),
-                                     self._root,
-                                     artifact_name)
-        if self.read_content:
-            with open(artifact_path, 'rb') as f:
-                return f.read()
-        return artifact_path
