@@ -27,7 +27,7 @@ from pipetree.exceptions import ArtifactSourceDoesNotExistError,\
     InvalidConfigurationFileError
 
 
-class TestLocalFileProvider(unittest.TestCase):
+class TestLocalDirectoryArtifactProvider(unittest.TestCase):
     def setUp(self):
         self.dirname = 'foo'
         self.filename = ['foo.bar', 'foo.baz']
@@ -56,8 +56,8 @@ class TestLocalFileProvider(unittest.TestCase):
     def test_load_file_data(self):
         provider = LocalFileArtifactProvider(path=self.dirname,
                                              read_content=True)
-        data = provider.yield_artifact(self.filename[0])
-        self.assertEqual(data.decode('utf-8'),
+        art = provider.yield_artifact(self.filename[0])
+        self.assertEqual(art.payload.decode('utf-8'),
                          self.filedatas[0])
 
     def test_load_file_names(self):
@@ -71,6 +71,7 @@ class TestLocalFileProvider(unittest.TestCase):
     def test_load_multiple_file_contents(self):
         provider = LocalFileArtifactProvider(path=self.dirname,
                                              read_content=True)
-        for block, data in zip(provider.yield_artifacts(),
+        for block, art in zip(provider.yield_artifacts(),
                                self.filedatas):
+            data = art.payload
             self.assertEqual(block.decode('utf-8'), data)

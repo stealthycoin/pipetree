@@ -18,12 +18,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from pipetree import STAGES
+
 from pipetree.utils import attach_config_to_object
 from pipetree.exceptions import IncorrectPipelineStageNameError,\
     NonPythonicNameError, MissingPipelineAttributeError
 from pipetree.utils import name_is_pythonic
-
 
 class PipelineStageConfig(object):
     def __init__(self, key, data):
@@ -39,7 +38,7 @@ class PipelineStageConfig(object):
             raise MissingPipelineAttributeError(
                 attribute="type",
                 stage_name=key)
-        
+
         if not self.type.endswith('PipelineStage'):
             self.type += 'PipelineStage'
         if self.type not in STAGES:

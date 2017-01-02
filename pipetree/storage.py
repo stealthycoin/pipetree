@@ -47,7 +47,7 @@ class ArtifactProvider(object):
         
     def yield_artifacts(self):
         for art in self._yield_artifacts:
-            yield _ensure_base_meta(art)
+            yield self._ensure_base_meta(art)
 
 class LocalFileArtifactProvider(ArtifactProvider):
     DEFAULTS = {
@@ -90,8 +90,8 @@ class LocalDirectoryArtifactProvider(ArtifactProvider):
         'read_content': False
     }
 
-    def __init__(self, path='', **kwargs):
-        super().__init__(path=path, **kwargs)
+    def __init__(self, path='', stage_config=None, **kwargs):
+        super().__init__(path=path, stage_config=None, **kwargs)
         if stage_config is None:
             raise ArtifactProviderMissingParameterError(provider=self.__class__.__name__,
                                                         parameter="stage_config")
