@@ -22,7 +22,7 @@
 from pipetree import STAGES
 from pipetree.utils import attach_config_to_object
 from pipetree.exceptions import IncorrectPipelineStageNameError,\
-    NonPythonicNameError
+    NonPythonicNameError, MissingPipelineAttributeError
 from pipetree.utils import name_is_pythonic
 
 
