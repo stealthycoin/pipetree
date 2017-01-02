@@ -20,12 +20,63 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import os
+import os.path
 import unittest
 from tests import isolated_filesystem
 from pipetree.config import PipelineStageConfig
-from pipetree.storage import LocalDirectoryArtifactProvider
+from pipetree.storage import LocalDirectoryArtifactProvider,\
+    LocalFileArtifactProvider
 from pipetree.exceptions import ArtifactSourceDoesNotExistError,\
     InvalidConfigurationFileError
+
+
+class TestLocalFileArtifactProvider(unittest.TestCase):
+    def setUp(self):
+        self.dirname = 'foo'
+        self.filename = ['foo.bar', 'foo.baz']
+        self.filedatas = ['foo bar baz', 'helloworld']
+        self.fs = isolated_filesystem()
+        self.fs.__enter__()
+        self.stage_config = PipelineStageConfig("test_stage_name", {
+            "type": "LocalFilePipelineStage"
+        })
+
+        # Build directory structure
+        os.makedirs(self.dirname)
+        for name, data in zip(self.filename, self.filedatas):
+            with open(os.path.join(os.getcwd(),
+                                   self.dirname,
+                                   name), 'w') as f:
+                f.write(data)
+
+    def tearDown(self):
+        self.fs.__exit__(None, None, None)
+
+    def test_load_nonexistant_file(self):
+        try:
+            LocalFileArtifactProvider(path='folder/shim.sham',
+                                           stage_config=self.stage_config)
+            self.assertTrue(False, 'This was supposed to raise an exception')
+        except ArtifactSourceDoesNotExistError:
+            pass
+
+    def test_yield_artifacts(self):
+        provider = LocalFileArtifactProvider(
+            path=os.path.join(self.dirname, self.filename[0]),
+            stage_config=self.stage_config,
+            read_content=True)
+        arts = provider.yield_artifacts()
+        la = list(arts)
+        self.assertEqual(len(la), 1)
+
+        def test_load_file_data(self):
+            provider = LocalFileArtifactProvider(
+                path=os.path.join(self.dirname, self.filename[0]),
+                stage_config=self.stage_config,
+                read_content=True)
+        Art = provider._yield_artifact()
+        self.assertEqual(art.payload.decode('utf-8'),
+                         self.filedatas[0])
 
 
 class TestLocalDirectoryArtifactProvider(unittest.TestCase):

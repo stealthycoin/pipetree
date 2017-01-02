@@ -1,9 +1,11 @@
-__version__ = '0.1.0'
+from pipetree.stage import LocalFilePipelineStage,\
+    LocalDirectoryPipelineStage, ExecutorPipelineStage
 
-from pipetree.stage import LocalDirectoryPipelineStage, ExecutorPipelineStage
+__version__ = '0.1.0'
 
 STAGES = {
     "LocalDirectoryPipelineStage": LocalDirectoryPipelineStage,
+    "LocalFilePipelineStage": LocalFilePipelineStage,
     "ExecutorPipelineStage": ExecutorPipelineStage
 }
 

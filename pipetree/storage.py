@@ -45,9 +45,9 @@ class ArtifactProvider(object):
 
     def _ensure_base_meta(self, art):
         return art
-        
+
     def yield_artifacts(self):
-        for art in self._yield_artifacts:
+        for art in self._yield_artifacts():
             yield self._ensure_base_meta(art)
 
 
@@ -75,10 +75,10 @@ class LocalFileArtifactProvider(ArtifactProvider):
                     provider=self.__class__.__name__,
                     source='file: %s' % os.path.join(os.getcwd(), self.path))
 
-    def yield_artifacts(self):
-        yield self.yield_artifact()
+    def _yield_artifacts(self):
+        yield self._yield_artifact()
 
-    def yield_artifact(self):
+    def _yield_artifact(self):
         artifact_path = os.path.join(os.getcwd(), self._path)
         content = ""
         with open(artifact_path, 'rb') as f:
@@ -113,7 +113,7 @@ class LocalDirectoryArtifactProvider(ArtifactProvider):
                 provider=self.__class__.__name__,
                 source='directory: %s' % os.path.join(os.getcwd(), self._root))
 
-    def yield_artifacts(self):
+    def _yield_artifacts(self):
         for entry in os.listdir(self._root):
             yield self._yield_artifact(entry)
 
