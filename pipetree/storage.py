@@ -23,7 +23,9 @@ import os
 import os.path
 import copy
 from pipetree.utils import attach_config_to_object
-from pipetree.exceptions import ArtifactSourceDoesNotExistError
+from pipetree.exceptions import ArtifactSourceDoesNotExistError, ArtifactProviderMissingParameterError
+from pipetree.artifact import Artifact
+from pipetree.config import PipelineStageConfig
 
 
 class ArtifactProvider(object):
@@ -51,8 +53,12 @@ class LocalFileArtifactProvider(ArtifactProvider):
     DEFAULTS = {
     }
 
-    def __init__(self, path='', **kwargs):
-        super().__init__(path=path, **kwargs)
+    def __init__(self, path='', stage_config=None, **kwargs):
+        super().__init__(path=path, stage_config=stage_config, **kwargs)
+        if stage_config is None:
+            raise ArtifactProviderMissingParameterError(provider=self.__class__.__name__,
+                                                        parameter="stage_config")
+        self._stage_config = stage_config
         self._path = path
         self._validate_file()
 
@@ -67,16 +73,17 @@ class LocalFileArtifactProvider(ArtifactProvider):
                     source='file: %s' % os.path.join(os.getcwd(), self.path))
 
     def yield_artifacts(self):
-        yield f
+        yield self.yield_artifact()
 
-    def yield_artifact(self, artifact_name):
-        artifact_path = os.path.join(os.getcwd(),
-                                     self._root,
-                                     artifact_name)
-        if self.read_content:
-            with open(artifact_path, 'rb') as f:
-                return f.read()
-        return artifact_path
+    def yield_artifact(self):
+        artifact_path = os.path.join(os.getcwd(), self._path)
+        content = ""
+        with open(artifact_path, 'rb') as f:
+            content = f.read()
+
+        art = Artifact(self._stage_config)
+        art.payload = content
+        return art
 
 class LocalDirectoryArtifactProvider(ArtifactProvider):
     DEFAULTS = {
@@ -85,6 +92,10 @@ class LocalDirectoryArtifactProvider(ArtifactProvider):
 
     def __init__(self, path='', **kwargs):
         super().__init__(path=path, **kwargs)
+        if stage_config is None:
+            raise ArtifactProviderMissingParameterError(provider=self.__class__.__name__,
+                                                        parameter="stage_config")
+        self._stage_config = stage_config        
         self._root = path
         self._validate_dir()
 
@@ -107,5 +118,7 @@ class LocalDirectoryArtifactProvider(ArtifactProvider):
                                      artifact_name)
         if self.read_content:
             with open(artifact_path, 'rb') as f:
-                return f.read()
+                art = Artifact(self._stage_config)
+                art._payload = f.read()
+                return art
         return artifact_path
