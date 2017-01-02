@@ -36,6 +36,11 @@ class PipelineStageConfig(object):
         attach_config_to_object(self, data)
         self.name = key
 
+        if not hasattr(self, "type"):
+            raise MissingPipelineAttributeError(
+                attribute="type",
+                stage_name=key)
+        
         if not self.type.endswith('PipelineStage'):
             self.type += 'PipelineStage'
         if self.type not in STAGES:
