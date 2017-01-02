@@ -101,9 +101,6 @@ class Artifact(object):
         for prop in self._meta_properties:
             # Ensure that every meta property is set within the dictionary
             if prop not in d:
-                stage = "UNKNOWN STAGE"
-                if "pipeline_stage" in d:
-                    stage = d["pipeline_stage"]
-                raise InvalidArtifactMetadataError(stage=stage, property=prop)
+                raise InvalidArtifactMetadataError(stage=d.get("pipeline_stage", "UNKNOWN STAGE"), property=prop)
             else:
                 setattr(self, "_" + prop, d[prop])
