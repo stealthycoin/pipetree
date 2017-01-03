@@ -25,9 +25,50 @@ import unittest
 from tests import isolated_filesystem
 from pipetree.config import PipelineStageConfig
 from pipetree.storage import LocalDirectoryArtifactProvider,\
-    LocalFileArtifactProvider
+    LocalFileArtifactProvider,\
+    ParameterArtifactProvider
 from pipetree.exceptions import ArtifactSourceDoesNotExistError,\
-    InvalidConfigurationFileError
+    InvalidConfigurationFileError,\
+    ArtifactProviderMissingParameterError,\
+    ArtifactProviderFailedError
+
+
+class TestParameterArtifactProvider(unittest.TestCase):
+    def setUp(self):
+        self.stage_config = PipelineStageConfig("test_stage_name", {
+            "type": "ParameterPipelineStage"
+        })
+        self.test_parameters = {"int_param": 200, "str_param": "str"}
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_missing_parameters(self):
+        try:
+            provider = ParameterArtifactProvider(
+                stage_config=self.stage_config,
+                parameters={})
+            self.assertEqual(0, "Provider creation should have failed")
+        except ArtifactProviderMissingParameterError:
+            pass
+
+    def test_yield_artifacts(self):
+        provider = ParameterArtifactProvider(
+            stage_config=self.stage_config,
+            parameters=self.test_parameters)
+
+        arts = provider.yield_artifacts()
+        la = list(arts)
+        self.assertEqual(1, len(la))
+        yielded_params = la[0]
+        for k in self.test_parameters:
+            if k not in yielded_params:
+                raise ArtifactProviderFailedError(
+                    provider = self.__class__.__name__,
+                    error="Missing parameter "+k
+                )
+    pass
 
 
 class TestLocalFileArtifactProvider(unittest.TestCase):
@@ -69,11 +110,11 @@ class TestLocalFileArtifactProvider(unittest.TestCase):
         la = list(arts)
         self.assertEqual(len(la), 1)
 
-        def test_load_file_data(self):
-            provider = LocalFileArtifactProvider(
-                path=os.path.join(self.dirname, self.filename[0]),
-                stage_config=self.stage_config,
-                read_content=True)
+    def test_load_file_data(self):
+        provider = LocalFileArtifactProvider(
+            path=os.path.join(self.dirname, self.filename[0]),
+            stage_config=self.stage_config,
+            read_content=True)
         Art = provider._yield_artifact()
         self.assertEqual(art.payload.decode('utf-8'),
                          self.filedatas[0])

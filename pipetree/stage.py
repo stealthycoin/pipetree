@@ -19,8 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from pipetree.storage import LocalDirectoryArtifactProvider, LocalFileArtifactProvider
+from pipetree.storage import LocalDirectoryArtifactProvider,\
+    LocalFileArtifactProvider
 from pipetree.exceptions import InvalidConfigurationFileError
+
 
 class BasePipelineStage(object):
     """Base class for a pipeline stage"""
@@ -39,6 +41,29 @@ class BasePipelineStage(object):
 
     def _validate_config(self):
         raise NotImplementedError
+
+
+class ParameterPipelineStage(BasePipelineStage):
+    """A pipeline stage for fixed parameters"""
+
+    def __init__(self, config):
+        super().__init__(config)
+        self._artifact_source = ParameterArtifactProvider(config)
+
+    def validate_prereqs(self, previous_stages):
+        return True
+
+    def _source_artifact(self, artifact_name):
+        pass
+
+    def _yield_artifacts(self):
+        pass
+
+    def _validate_config(self, config):
+        """
+        Raise an exception if the config is invald
+        """
+        return True
 
 
 class LocalFilePipelineStage(BasePipelineStage):
@@ -66,6 +91,7 @@ class LocalFilePipelineStage(BasePipelineStage):
                 configurable=self.__class__.__name__,
                 reason='expected \'filepath\' entry of type string.')
         return True
+
 
 class LocalDirectoryPipelineStage(BasePipelineStage):
     """A pipeline stage for sourcing files from a directory"""

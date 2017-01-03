@@ -51,6 +51,40 @@ class ArtifactProvider(object):
             yield self._ensure_base_meta(art)
 
 
+class ParameterArtifactProvider(ArtifactProvider):
+    DEFAULTS = {
+    }
+
+    def __init__(self, parameters={}, stage_config=None, **kwargs):
+        super().__init__(
+            parameters=parameters,
+            stage_config=stage_config,
+            **kwargs)
+        if stage_config is None:
+            raise ArtifactProviderMissingParameterError(
+                provider=self.__class__.__name__,
+                parameter="stage_config")
+        if len(list(parameters.keys())) is 0:
+            raise ArtifactProviderMissingParameterError(
+                provider=self.__class__.__name__,
+                parameter="parameters")
+
+        self._parameters = parameters
+        self._stage_config = stage_config
+
+    def _validate_config(self):
+        pass
+
+    def _yield_artifacts(self):
+        yield self._yield_artifact()
+
+    def _yield_artifact(self):
+        return self._parameters
+        art = Artifact(self._stage_config)
+        art.payload = content
+        return art
+
+
 class LocalFileArtifactProvider(ArtifactProvider):
     DEFAULTS = {
     }
