@@ -49,7 +49,7 @@ class TestParameterArtifactProvider(unittest.TestCase):
             provider = ParameterArtifactProvider(
                 stage_config=self.stage_config,
                 parameters={})
-            self.assertEqual(0, "Provider creation should have failed")
+            self.assertEqual(provider, "Provider creation should have failed")
         except ArtifactProviderMissingParameterError:
             pass
 
@@ -115,7 +115,7 @@ class TestLocalFileArtifactProvider(unittest.TestCase):
             path=os.path.join(self.dirname, self.filename[0]),
             stage_config=self.stage_config,
             read_content=True)
-        Art = provider._yield_artifact()
+        art = provider._yield_artifact()
         self.assertEqual(art.payload.decode('utf-8'),
                          self.filedatas[0])
 

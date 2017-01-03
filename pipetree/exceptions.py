@@ -62,6 +62,10 @@ class ArtifactSourceDoesNotExistError(PipetreeError):
     message = '{provider} cannot source artifacts from {source}'
 
 
+class InvalidArtifactMetadataError(PipetreeError):
+    message = 'Artifact Metadata Invalid for pipeline stage {stage}, property {property}'
+
+
 class ArtifactProviderMissingParameterError(PipetreeError):
     message = '{provider} instantiated without parameter {parameter}'
 

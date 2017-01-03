@@ -25,6 +25,7 @@ from pipetree.exceptions import IncorrectPipelineStageNameError,\
     NonPythonicNameError, MissingPipelineAttributeError
 from pipetree.utils import name_is_pythonic
 
+
 class PipelineStageConfig(object):
     def __init__(self, key, data):
         if not name_is_pythonic(key):
@@ -39,7 +40,6 @@ class PipelineStageConfig(object):
             raise MissingPipelineAttributeError(
                 attribute="type",
                 stage_name=key)
-
         if not self.type.endswith('PipelineStage'):
             self.type += 'PipelineStage'
         if self.type not in STAGES:

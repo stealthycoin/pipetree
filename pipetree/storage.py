@@ -40,9 +40,6 @@ class ArtifactProvider(object):
     def _validate_config(self):
         raise NotImplementedError
 
-    def _yield_artifacts(self):
-        raise NotImplementedError
-
     def _ensure_base_meta(self, art):
         return art
 
