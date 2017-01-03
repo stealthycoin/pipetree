@@ -123,6 +123,19 @@ class TestPipelineLoading(unittest.TestCase):
         except InvalidConfigurationFileError:
             pass
 
+    def test_generate_local_file_no_path(self):
+        config = OrderedDict({
+            'StageA': {
+                'type': 'LocalFilePipelineStage'
+            },
+        })
+        try:
+            self.factory.generate_pipeline_from_dict(config)
+            print('This should have failed, inputs is not an array')
+            self.fail()
+        except InvalidConfigurationFileError:
+            pass
+
     def test_generage_executor_no_input(self):
         config = OrderedDict({
             'StageA': {
