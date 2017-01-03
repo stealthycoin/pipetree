@@ -71,7 +71,9 @@ class LocalFilePipelineStage(BasePipelineStage):
 
     def __init__(self, config):
         super().__init__(config)
-        self._artifact_source = LocalFileArtifactProvider(config.filepath)
+        self._artifact_source = LocalFileArtifactProvider(
+            path=config.filepath,
+            stage_config=config)
 
     def validate_prereqs(self, previous_stages):
         return True
@@ -98,7 +100,9 @@ class LocalDirectoryPipelineStage(BasePipelineStage):
 
     def __init__(self, config):
         super().__init__(config)
-        self._artifact_source = LocalDirectoryArtifactProvider(config.filepath)
+        self._artifact_source = LocalDirectoryArtifactProvider(
+            path=config.filepath,
+            stage_config=config)
 
     def validate_prereqs(self, previous_stages):
         return True
