@@ -44,6 +44,15 @@ class TestParameterArtifactProvider(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_missing_config(self):
+        try:
+            provider = ParameterArtifactProvider(
+                stage_config=None,
+                parameters={})
+            self.assertEqual(provider, "Provider creation should have failed")
+        except ArtifactProviderMissingParameterError:
+            pass
+
     def test_missing_parameters(self):
         try:
             provider = ParameterArtifactProvider(
@@ -70,7 +79,6 @@ class TestParameterArtifactProvider(unittest.TestCase):
                 )
     pass
 
-
 class TestLocalFileArtifactProvider(unittest.TestCase):
     def setUp(self):
         self.dirname = 'foo'
@@ -92,6 +100,14 @@ class TestLocalFileArtifactProvider(unittest.TestCase):
 
     def tearDown(self):
         self.fs.__exit__(None, None, None)
+
+    def test_missing_config(self):
+        try:
+            LocalFileArtifactProvider(path='folder/shim.sham',
+                                           stage_config=None)
+            self.assertEqual(0, "Provider creation should have failed")
+        except ArtifactProviderMissingParameterError:
+            pass
 
     def test_load_nonexistant_file(self):
         try:
@@ -141,6 +157,14 @@ class TestLocalDirectoryArtifactProvider(unittest.TestCase):
 
     def tearDown(self):
         self.fs.__exit__(None, None, None)
+
+    def test_missing_config(self):
+        try:
+            LocalDirectoryArtifactProvider(path='folder/',
+                                           stage_config=None)
+            self.assertEqual(0, "Provider creation should have failed")
+        except ArtifactProviderMissingParameterError:
+            pass
 
     def test_load_nonexistant_dir(self):
         try:
