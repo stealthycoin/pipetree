@@ -24,13 +24,12 @@ import os
 import os.path
 import copy
 import distutils.dir_util
-import shutil
-import hashlib
 import json
 
 from pipetree.utils import attach_config_to_object
 from pipetree.exceptions import ArtifactMissingPayloadError
 from pipetree.artifact import Artifact
+
 
 class ArtifactBackend(object):
     def __init__(self, **kwargs):
