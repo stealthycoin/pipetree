@@ -54,7 +54,8 @@ class LocalArbiter(ArbiterBase):
         try:
             while True:
                 future = yield from self._queue.get()
-                print('Read: %s' % future)
+
+                print('Read: %s' % future._input_sources)
         except RuntimeError:
             pass
 

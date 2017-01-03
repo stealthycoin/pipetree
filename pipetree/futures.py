@@ -36,7 +36,6 @@ class InputFuture(object):
     """Helper class that manages ArtifactFutures and resolves them into Artifacts"""
     def __init__(self, stage_name):
         self._stage_name = stage_name
-
         self._input_sources = []
 
         # This future represents the overall batch status

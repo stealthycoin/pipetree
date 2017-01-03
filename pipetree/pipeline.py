@@ -89,10 +89,18 @@ class Pipeline(object):
 
         # Create an input future for each input to this function
         pre_reqs = chain.get_level(1)
-        input_future = InputFuture(stage_name)
-        for pre_req in pre_reqs:
-            input_future.add_input_source(pre_req)
-        schedule(input_future)
+
+        if len(pre_reqs) == 0:
+            # This stage does not need to make futures based on inputs
+            # just write some result somewhere who knows wtf is going on
+        else:
+            # This is when we do need to schedule a future with the arbiter
+            # Schedule somethign to be written when input_future resolves
+            input_future = InputFuture(stage_name)
+            for pre_req in pre_reqs:
+                input_future.add_input_source(pre_req)
+            schedule(input_future)
+
 
     @property
     def stages(self):
