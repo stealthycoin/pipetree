@@ -34,7 +34,7 @@ class TestArtifact(unittest.TestCase):
         art_a = Artifact(stage_a)
         art_b = Artifact(stage_b)
         self.assertNotEqual(art_a._definition_hash, art_b._definition_hash)
-        
+
     def test_stage_definition_hash_idempotence(self):
         stage_a = PipelineStageConfig('some_name', {"A": 1, "B": 2, "type": "ExecutorPipelineStage"})
         stage_b = PipelineStageConfig('some_name', {"B": 2, "A": 1, "type": "ExecutorPipelineStage"})

@@ -80,6 +80,10 @@ class ArtifactProviderFailedError(PipetreeError):
               + ' {error}'
 
 
+class ArtifactMissingPayloadError(PipetreeError):
+    message = 'Artifact from stage {stage} is missing its payload'
+
+
 class StageDoesNotExistError(PipetreeError):
     message = 'Specified pipeline stage {stage} does not exist'
 

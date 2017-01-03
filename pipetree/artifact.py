@@ -56,6 +56,9 @@ class Artifact(object):
         # Name of the pipeline stage that produced this artifact
         self._pipeline_stage = pipeline_stage_config.name
 
+        # Store the pipeline stage config object
+        self._config = pipeline_stage_config
+
         # Name of the type of item
         self._item_type = item_type
 
@@ -88,7 +91,14 @@ class Artifact(object):
         h = hashlib.md5()
         stage_json = json.dumps(props, sort_keys=True)
         h.update(str(stage_json).encode('utf-8'))
-        self._definition_hash = h.digest()
+        self._definition_hash = str(h.hexdigest())
+
+    def get_uid(self):
+        """
+        Generate a unique ID for this artifact.
+        """
+        return generate_uid(self._specific_hash, self._dependency_hash,
+                            self._definition_hash)
 
     def meta_to_dict(self):
         """
@@ -113,3 +123,14 @@ class Artifact(object):
                     property=prop)
             else:
                 setattr(self, "_" + prop, d[prop])
+
+def generate_uid(_specific_hash, _dependency_hash, _definition_hash):
+        specific_hash = ""
+        if _specific_hash is not None:
+            specific_hash = _specific_hash
+        dependency_hash = ""
+        if _dependency_hash is not None:
+            dependency_hash = _dependency_hash
+        return _definition_hash + "_" + \
+            specific_hash + "_" + \
+            dependency_hash
