@@ -61,7 +61,7 @@ class TestParameterArtifactProvider(unittest.TestCase):
         arts = provider.yield_artifacts()
         la = list(arts)
         self.assertEqual(1, len(la))
-        yielded_params = la[0]
+        yielded_params = la[0].payload
         for k in self.test_parameters:
             if k not in yielded_params:
                 raise ArtifactProviderFailedError(

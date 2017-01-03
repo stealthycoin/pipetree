@@ -76,9 +76,8 @@ class ParameterArtifactProvider(ArtifactProvider):
         yield self._yield_artifact()
 
     def _yield_artifact(self):
-        return self._parameters
         art = Artifact(self._stage_config)
-        art.payload = content
+        art.payload = self._parameters
         return art
 
 
