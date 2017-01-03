@@ -19,8 +19,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import inspect
 from pipetree.storage import LocalDirectoryArtifactProvider,\
-    LocalFileArtifactProvider
+    LocalFileArtifactProvider,\
+    ParameterArtifactProvider
 from pipetree.exceptions import InvalidConfigurationFileError
 
 
@@ -48,7 +50,22 @@ class ParameterPipelineStage(BasePipelineStage):
 
     def __init__(self, config):
         super().__init__(config)
-        self._artifact_source = ParameterArtifactProvider(config)
+
+        params = self.params_from_config(config)
+        self._artifact_source = ParameterArtifactProvider(
+            stage_config=config,
+            parameters=params)
+
+    def params_from_config(self, config):
+        """ Extract parameters from a config"""
+        exclude = ['type']
+        params = {}
+        for prop in dir(config):
+            value = getattr(config, prop)
+            if not prop.startswith('__') and not inspect.ismethod(value)\
+               and prop not in exclude:
+                params[prop] = value
+        return params
 
     def validate_prereqs(self, previous_stages):
         return True
