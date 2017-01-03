@@ -19,7 +19,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import hashlib
 import inspect
 import json
@@ -40,8 +39,8 @@ class Artifact(object):
         #      "prev_pipeline_stage/prev_pipeline_item_type2": [0xAB220xBF...]}
         self._antecedents = {}
 
-        # Combined hash of the specific artifacts utilized by the stage
-        # that produced this artifact
+        # Combined hash of the specific artifacts that were utilized by the
+        # stage that produced this artifact
         self._dependency_hash = None
 
         # Creation time of artifact payload. Stored as UNIX epoch time
@@ -50,7 +49,8 @@ class Artifact(object):
         # Hash of the pipeline stage definition JSON
         self._definition_hash = None
 
-        # Specific hash, which varies for different artifact types
+        # Specific hash, the production of which varies for different
+        # artifact types
         self._specific_hash = None
 
         # Name of the pipeline stage that produced this artifact
@@ -80,13 +80,12 @@ class Artifact(object):
         """
 
         # We'll hash the stage definition to check if it's changed
-        props = {}
-        ignore = ["parent_class"]
-        for prop in dir(pipeline_stage_config):
-            value = getattr(pipeline_stage_config, prop)
-            if not prop.startswith('__') and not inspect.ismethod(value)\
-               and prop not in ignore:
-                props[prop] = value
+        ignore = ['parent_class']
+        props = {k: getattr(pipeline_stage_config, k)
+                 for k in dir(pipeline_stage_config)
+                 if not k.startswith('__')
+                 and not inspect.ismethod(getattr(pipeline_stage_config, k))
+                 and k not in ignore}
 
         h = hashlib.md5()
         stage_json = json.dumps(props, sort_keys=True)
@@ -124,6 +123,7 @@ class Artifact(object):
             else:
                 setattr(self, "_" + prop, d[prop])
 
+
 def generate_uid(_specific_hash, _dependency_hash, _definition_hash):
         specific_hash = ""
         if _specific_hash is not None:
@@ -134,3 +134,10 @@ def generate_uid(_specific_hash, _dependency_hash, _definition_hash):
         return _definition_hash + "_" + \
             specific_hash + "_" + \
             dependency_hash
+
+class Item(object):
+    def __init__(self, payload, meta={}, tags=[], type=None):
+        self.payload = payload
+        self.meta = meta
+        self.tags = tags
+        self.type = type

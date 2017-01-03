@@ -85,6 +85,41 @@ class TestLocalArtifactBackend(unittest.TestCase):
         backend.save_artifact(artifact)
 
         loaded_artifact = backend.load_artifact(artifact)
+        self.assertEqual(loaded_artifact.payload, artifact.payload)
+
+    def test_find_artifact(self):
+        backend = LocalArtifactBackend(config={"path": "./test_storage/"})
+        artifact = Artifact(self.stage_config)
+        payload = "SHRIM"
+        artifact.payload = payload
+        backend.save_artifact(artifact)
+
+        loaded_artifact = backend._find_cached_artifact(artifact)
+
+        # Ensure that we found the artifact
+        self.assertNotEqual(None, loaded_artifact)
+
+        # Ensure that the artifact doesn't have a payload
+        self.assertEqual(None, loaded_artifact.payload)
+
+        # Ensure that meta properties are correctly set on artifact
+        self.assertEqual(loaded_artifact._specific_hash,
+                         artifact._specific_hash)
+        self.assertEqual(loaded_artifact._dependency_hash,
+                         artifact._dependency_hash)
+        self.assertEqual(loaded_artifact._definition_hash,
+                         artifact._definition_hash)
+        self.assertEqual(loaded_artifact._pipeline_stage,
+                         artifact._pipeline_stage)
+        self.assertEqual(loaded_artifact._item_type,
+                         artifact._item_type)        
+
+    def test_user_meta(self):
+        backend = LocalArtifactBackend(config={"path": "./test_storage/"})
+        artifact = Artifact(self.stage_config)
+        payload = "SHRIM"
+        artifact.payload = payload
+        backend.save_artifact(artifact)
+
+        loaded_artifact = backend.load_artifact(artifact)
         self.assertEqual(loaded_artifact.payload, payload)
-        pass
-    

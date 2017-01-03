@@ -44,6 +44,9 @@ class BasePipelineStage(object):
     def _validate_config(self):
         raise NotImplementedError
 
+    def _wrap_item_in_artifact(self, item):
+        raise NotImplementedError
+
 
 class ParameterPipelineStage(BasePipelineStage):
     """A pipeline stage for fixed parameters"""
@@ -127,7 +130,7 @@ class LocalDirectoryPipelineStage(BasePipelineStage):
     def _source_artifact(self, artifact_name):
         pass
 
-    def _yield_artifacts(self):
+    def _yield_artifacts(self, *args, **kwargs):
         pass
 
     def _validate_config(self, config):
