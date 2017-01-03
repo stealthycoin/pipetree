@@ -41,6 +41,9 @@ class BasePipelineStage(object):
     def _validate_config(self):
         raise NotImplementedError
 
+    def _wrap_item_in_artifact(self, item):
+        raise NotImplementedError
+
 
 class LocalDirectoryPipelineStage(BasePipelineStage):
     """A pipeline stage for sourcing files from a directory"""

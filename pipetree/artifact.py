@@ -19,11 +19,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import hashlib
 import inspect
 import json
 from pipetree.exceptions import InvalidArtifactMetadataError
+
 
 class Artifact(object):
     def __init__(self, pipeline_stage_config, item_type=None):
@@ -35,12 +35,13 @@ class Artifact(object):
 
         # The specific artifacts that were utilized by the stage that produced
         # this artifact
-        # ex) {"prev_pipeline_stage/prev_pipeline_item_type": [0xAB224560xAB...],
-        #      "prev_pipeline_stage/prev_pipeline_item_type2": [0xAB221020xBF...] }
+        # example:
+        # {"prev_pipeline_stage/prev_pipeline_item_type": [0xAB224560xAB...],
+        #  "prev_pipeline_stage/prev_pipeline_item_type2": [0xAB221020xBF...]}
         self._antecedents = {}
 
-        # Combined hash of the specific artifacts that were utilized by the stage
-        # that produced this artifact
+        # Combined hash of the specific artifacts that were utilized by the
+        # stage that produced this artifact
         self._dependency_hash = None
 
         # Creation time of artifact payload. Stored as UNIX epoch time
@@ -49,21 +50,25 @@ class Artifact(object):
         # Hash of the pipeline stage definition JSON
         self._definition_hash = None
 
-        # Specific hash, the production of which varies for different artifact types
+        # Specific hash, the production of which varies for different
+        # artifact types
         self._specific_hash = None
 
         # Name of the pipeline stage that produced this artifact
         self._pipeline_stage = pipeline_stage_config.name
 
-        # Name of the type of item 
+        # Name of the type of item
         self._item_type = item_type
 
         # Actual artifact payload
         self._payload = None
 
         # Listing of meta properties for serialization purposes
-        self._meta_properties = ["meta", "tags", "antecedents", "creation_time", "definition_hash", "specific_hash", "dependency_hash", "pipeline_stage", "item_type"]
-        
+        self._meta_properties = ["meta", "tags", "antecedents",
+                                 "creation_time", "definition_hash",
+                                 "specific_hash", "dependency_hash",
+                                 "pipeline_stage", "item_type"]
+
         self._process_stage_definition(pipeline_stage_config)
 
     def _process_stage_definition(self, pipeline_stage_config):
@@ -72,21 +77,22 @@ class Artifact(object):
         """
 
         # We'll hash the stage definition to check if it's changed
-        props = {}
-        ignore = ["parent_class"]
-        for prop in dir(pipeline_stage_config):
-            value = getattr(pipeline_stage_config, prop)
-            if not prop.startswith('__') and not inspect.ismethod(value) and prop not in ignore:
-                props[prop] = value
+        ignore = ['parent_class']
+        props = {k: getattr(pipeline_stage_config, k)
+                 for k in dir(pipeline_stage_config)
+                 if not k.startswith('__')
+                 and not inspect.ismethod(getattr(pipeline_stage_config, k))
+                 and k not in ignore}
 
         h = hashlib.md5()
         stage_json = json.dumps(props, sort_keys=True)
         h.update(str(stage_json).encode('utf-8'))
         self._definition_hash = h.digest()
-        
+
     def meta_to_dict(self):
         """
-        Convert relevant internal object properties to a dictionary for serialization
+        Convert relevant internal object properties to a dictionary for
+        serialization
         """
         d = {}
         for prop in self._meta_properties:
@@ -107,3 +113,11 @@ class Artifact(object):
                 raise InvalidArtifactMetadataError(stage=stage, property=prop)
             else:
                 setattr(self, "_" + prop, d[prop])
+
+
+class Item(object):
+    def __init__(self, payload, meta={}, tags=[], type=None):
+        self.payload = payload
+        self.meta = meta
+        self.tags = tags
+        self.type = type

@@ -20,21 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import click
+import signal
 import asyncio
 from pipetree.pipeline import PipelineFactory
+from concurrent.futures import CancelledError
 
 
 class ArbiterBase(object):
     def __init__(self, filepath):
         self._loop = asyncio.get_event_loop()
-        self._pipeline = PipelineFactory().generate_pipeline_from_file(filepath)
+        self._pipeline = PipelineFactory().generate_pipeline_from_file(
+            filepath)
         self._queue = asyncio.Queue(loop=self._loop)
         self._pipeline.set_arbiter_queue(self._queue)
 
-
     def _evaluate_pipeline(self):
-        for name, stage in self._pipeline.stages.items():
-            self._queue.put_nowait(name)
+        for name in self._pipeline.endpoints:
+            self._pipeline.generate_stage(name, self.enqueue)
+
+    def enqueue(self, obj):
+        self._queue.put_nowait(obj)
 
     def run_event_loop(self):
         raise NotImplementedError
@@ -44,28 +49,34 @@ class LocalArbiter(ArbiterBase):
     def __init__(self, filepath):
         super().__init__(filepath)
 
-    async def _listen_to_queue(self):
+    @asyncio.coroutine
+    def _listen_to_queue(self):
         try:
             while True:
-                data = await self._queue.get()
-                print('Read: %s' % data)
+                future = yield from self._queue.get()
+                print('Read: %s' % future)
         except RuntimeError:
             pass
-        finally:
-            print('Closing local arbiter queue listener.')
 
-    async def _main(self):
+    @asyncio.coroutine
+    def _main(self):
         self._evaluate_pipeline()
-        print('Cats are fuzzy')
 
+    def shutdown(self):
+        for task in asyncio.Task.all_tasks():
+            task.cancel()
 
     def run_event_loop(self):
+        self._loop.add_signal_handler(signal.SIGHUP, self.shutdown)
+        self._loop.add_signal_handler(signal.SIGINT, self.shutdown)
+        self._loop.add_signal_handler(signal.SIGTERM, self.shutdown)
+
         try:
             self._loop.run_until_complete(asyncio.wait([
                 self._main(),
                 self._listen_to_queue()
             ]))
-        except KeyboardInterrupt:
+        except CancelledError:
             click.echo('\nKeyboard Interrupt: closing event loop.')
         finally:
             self._loop.close()

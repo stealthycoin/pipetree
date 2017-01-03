@@ -9,3 +9,4 @@ _STAGES = [
 STAGES = {cls.__name__: cls for cls in _STAGES}
 
 from pipetree.pipeline import Pipeline
+from pipetree.artifact import Item

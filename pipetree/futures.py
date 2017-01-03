@@ -34,8 +34,10 @@ class ArtifactFuture(object):
 
 class InputFuture(object):
     """Helper class that manages ArtifactFutures and resolves them into Artifacts"""
-    def __init__(self, input_source):
-        self._source = input_source
+    def __init__(self, stage_name):
+        self._stage_name = stage_name
+
+        self._input_sources = []
 
         # This future represents the overall batch status
         self._future = None
@@ -48,6 +50,9 @@ class InputFuture(object):
         # if any associated_futures fail then the _future will have an exception set
         self._associated_futures = set()
         self._associated_futures_lock = threading.Lock()
+
+    def add_input_source(self, source):
+        self._input_sources.append(source)
 
     @property
     def associated_futures(self):
