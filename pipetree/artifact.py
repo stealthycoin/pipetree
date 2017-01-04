@@ -24,7 +24,6 @@ import inspect
 import json
 from pipetree.exceptions import InvalidArtifactMetadataError
 
-
 class Artifact(object):
     def __init__(self, pipeline_stage_config, item_type=None):
         # User meta property
@@ -39,8 +38,8 @@ class Artifact(object):
         #      "prev_pipeline_stage/prev_pipeline_item_type2": [0xAB220xBF...]}
         self._antecedents = {}
 
-        # Combined hash of the specific artifacts that were utilized by the
-        # stage that produced this artifact
+        # Combined hash of the specific artifacts utilized by the stage
+        # that produced this artifact
         self._dependency_hash = None
 
         # Creation time of artifact payload. Stored as UNIX epoch time
@@ -86,7 +85,6 @@ class Artifact(object):
                  if not k.startswith('__')
                  and not inspect.ismethod(getattr(pipeline_stage_config, k))
                  and k not in ignore}
-
         h = hashlib.md5()
         stage_json = json.dumps(props, sort_keys=True)
         h.update(str(stage_json).encode('utf-8'))
@@ -122,7 +120,6 @@ class Artifact(object):
                     property=prop)
             else:
                 setattr(self, "_" + prop, d[prop])
-
 
 def generate_uid(_specific_hash, _dependency_hash, _definition_hash):
         specific_hash = ""
