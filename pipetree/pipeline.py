@@ -132,7 +132,7 @@ class Pipeline(object):
             # For now we'll ignore this, and just execute the stage.
             found_stage = self._stages[stage_name]
             result = []
-            for art in found_stage._yield_artifacts(input_artifacts=artifacts):
+            for art in found_stage.yield_artifacts(input_artifacts=artifacts):
                 print("Yielded an artifact after getting input artifacts")
                 result.append(art)
             return result
