@@ -22,6 +22,8 @@
 
 import unittest
 import json
+import asyncio
+import os.path
 from tests import isolated_filesystem
 from collections import OrderedDict
 
@@ -32,7 +34,29 @@ from pipetree.exceptions import *
 from pipetree.arbiter import LocalArbiter
 
 
-class TestLocalArbiter(unittest.TestCase):
+class AioTestCase(unittest.TestCase):
+    # noinspection PyPep8Naming
+    def __init__(self, methodName='runTest', loop=None):
+        self.loop = loop or asyncio.get_event_loop()
+        self._function_cache = {}
+        super(AioTestCase, self).__init__(methodName=methodName)
+
+    def coroutine_function_decorator(self, func):
+        def wrapper(*args, **kw):
+            return self.loop.run_until_complete(func(*args, **kw))
+        return wrapper
+
+    def __getattribute__(self, item):
+        attr = object.__getattribute__(self, item)
+        if asyncio.iscoroutinefunction(attr):
+            if item not in self._function_cache:
+                self._function_cache[item] = \
+                  self.coroutine_function_decorator(attr)
+            return self._function_cache[item]
+        return attr
+
+
+class TestLocalArbiter(AioTestCase):
     def setUp(self):
         self.config_filename = 'pipetree.json'
         self.testfile_name = 'testfile'
@@ -40,13 +64,12 @@ class TestLocalArbiter(unittest.TestCase):
         self.fs = isolated_filesystem()
         self.fs.__enter__()
 
-        with open("./" + self.testfile_name, 'w') as f:
+        with open(os.path.join(".", self.testfile_name), 'w') as f:
             json.dump(self.testfile_contents, f)
 
-        with open("./" + self.config_filename, 'w') as f:
+        with open(os.path.join(".", self.config_filename), 'w') as f:
             json.dump(self.generate_pipeline_config(), f)
 
-        self.arbiter = LocalArbiter("./" + self.config_filename)
         pass
 
     def tearDown(self):
@@ -65,5 +88,8 @@ class TestLocalArbiter(unittest.TestCase):
             })]
         )
 
-    def test_basic_functionality(self):
+
+    def test_basic_fucntionality(self):
+        arbiter = LocalArbiter(os.path.join(".", self.config_filename))
+        arbiter.run_event_loop(close_after=5.0)
         pass

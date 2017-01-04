@@ -38,7 +38,7 @@ class BasePipelineStage(object):
     def _source_artifact(self, artifact_name):
         raise NotImplementedError
 
-    def _yield_artifacts(self):
+    def _yield_artifacts(self, input_artifacts=None):
         raise NotImplementedError
 
     def _validate_config(self):
@@ -76,7 +76,7 @@ class ParameterPipelineStage(BasePipelineStage):
     def _source_artifact(self, artifact_name):
         pass
 
-    def _yield_artifacts(self):
+    def _yield_artifacts(self, input_artifacts=None):
         pass
 
     def _validate_config(self, config):
@@ -101,8 +101,8 @@ class LocalFilePipelineStage(BasePipelineStage):
     def _source_artifact(self, artifact_name):
         pass
 
-    def _yield_artifacts(self):
-        pass
+    def _yield_artifacts(self, input_artifacts=None):
+        return self._artifact_source.yield_artifacts()
 
     def _validate_config(self, config):
         """
@@ -131,7 +131,7 @@ class LocalDirectoryPipelineStage(BasePipelineStage):
         pass
 
     def _yield_artifacts(self, *args, **kwargs):
-        pass
+        return self._artifact_source.yield_artifacts()
 
     def _validate_config(self, config):
         """
@@ -159,7 +159,7 @@ class ExecutorPipelineStage(BasePipelineStage):
     def _source_artifact(self, artifact_name):
         pass
 
-    def _yield_artifacts(self):
+    def _yield_artifacts(self, input_artifacts=None):
         pass
 
     def _validate_config(self, config):

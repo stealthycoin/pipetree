@@ -19,6 +19,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import copy
 import asyncio
 import threading
 
@@ -33,7 +34,10 @@ class ArtifactFuture(object):
 
 
 class InputFuture(object):
-    """Helper class that manages ArtifactFutures and resolves them into Artifacts"""
+    """
+    Helper class that manages ArtifactFutures
+    and resolves them into Artifacts
+    """
     def __init__(self, stage_name):
         self._stage_name = stage_name
         self._input_sources = []
@@ -44,9 +48,13 @@ class InputFuture(object):
         self._result = None
         self._lock = threading.Lock()
 
-        # Associated futures are the individual artifact futures that are resolving
-        # once all resolve the main _future will have its result set
-        # if any associated_futures fail then the _future will have an exception set
+        self._futures_created = False
+        """
+        Associated futures are the individual artifact
+        futures that are resolving. Once all resolve the
+        main _future will have its result set if any
+        associated_futures fail then the _future will have an exception set
+        """
         self._associated_futures = set()
         self._associated_futures_lock = threading.Lock()
 
@@ -57,6 +65,36 @@ class InputFuture(object):
     def associated_futures(self):
         with self._associated_futures_lock:
             return copy.copy(self._associated_futures)
+
+    @asyncio.coroutine
+    def await_artifacts(self):
+        """
+        Await the production of artifacts from all associated futures
+        """
+        print("AWAITING ARTIFACTS MSIR FOR STAGE "+self._stage_name)
+        while True:
+            print("Charlie")
+            yield from asyncio.sleep(1)
+            print("Charlie2")
+            with self._lock:
+                if self._futures_created is True:
+                    break
+
+        print("FUTURES WERE CREATED AND STUFF!!!!")
+        print(self._associated_futures)
+        results = []
+        for future in self._associated_futures:
+            x = yield from future
+            results.append(x)
+        return results
+
+    def add_associated_future(self, future):
+        with self._associated_futures_lock:
+            self._associated_futures.add(future)
+
+    def set_all_associated_futures_created(self):
+        with self._lock:
+            self._futures_created = True
 
     @property
     def exception(self):
