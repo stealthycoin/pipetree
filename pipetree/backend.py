@@ -35,6 +35,7 @@ STAGE_COMPLETE = 'complete'
 STAGE_IN_PROGRESS = 'in_progress'
 STAGE_DOES_NOT_EXIST = 'does_not_exist'
 
+
 class ArtifactBackend(object):
     def __init__(self, **kwargs):
         config = copy.copy(self.DEFAULTS)
@@ -285,7 +286,7 @@ class LocalArtifactBackend(ArtifactBackend):
     def log_pipeline_stage_run_complete(self, stage_config, dependency_hash):
         with self._write_lock:
             self._u_log_pipeline_stage_run_complete(stage_config,
-                                                      dependency_hash)
+                                                    dependency_hash)
 
     def _u_log_pipeline_stage_run_complete(self, stage_config,
                                            dependency_hash):
@@ -335,11 +336,11 @@ class LocalArtifactBackend(ArtifactBackend):
 
         uid = artifact.get_uid()
         if uid not in meta['artifacts']:
-            meta['artifacts'][uid] = \
-                {"item_type": artifact.item.type,
-                 "specific_hash": artifact._specific_hash,
-                 "uid": uid
-                }
+            meta['artifacts'][uid] = {
+                "item_type": artifact.item.type,
+                "specific_hash": artifact._specific_hash,
+                "uid": uid
+            }
         else:
             print("Artifact %s already generated for run %s" %
                   (artifact.get_uid(), artifact._pipeline_stage))
@@ -402,7 +403,7 @@ class LocalArtifactBackend(ArtifactBackend):
                     self._pipeline_stage_run_filename(
                         dependency_hash,
                         stage_config.hash())),
-                    'r') as f:
+                      'r') as f:
                 contents = json.load(f)
                 return contents
         except FileNotFoundError:
